@@ -8,11 +8,12 @@
 package edu.neu.coe.info6205.union_find;
 
 import java.util.Arrays;
+import java.util.Random;
 
 /**
  * Height-weighted Quick Union with Path Compression
  */
-public class UF_HWQUPC implements UF {
+    public class UF_HWQUPC implements UF {
     /**
      * Ensure that site p is connected to site q,
      *
@@ -81,7 +82,10 @@ public class UF_HWQUPC implements UF {
     public int find(int p) {
         validate(p);
         int root = p;
-        // TO BE IMPLEMENTED
+        while(parent[root]!=root) {
+            doPathCompression(p);
+            root=parent[root];
+        }
         return root;
     }
 
@@ -169,6 +173,15 @@ public class UF_HWQUPC implements UF {
 
     private void mergeComponents(int i, int j) {
         // TO BE IMPLEMENTED make shorter root point to taller one
+        if(i==j) return;
+        if(height[i]<height[j]) {
+            updateParent(i,j);
+            updateHeight(j,i);
+        }
+        else {
+            updateParent(j,i);
+            updateHeight(i,j);
+        }
     }
 
     /**
@@ -176,5 +189,45 @@ public class UF_HWQUPC implements UF {
      */
     private void doPathCompression(int i) {
         // TO BE IMPLEMENTED update parent to value of grandparent
+        if (this.pathCompression) parent[i] = parent[parent[i]];
+    }
+
+    /**
+     *
+     * @param n sites
+     * @return total number of connections generated
+     */
+    public static int count(int n) {
+        UF_HWQUPC uf = new UF_HWQUPC(n);
+        Random rd = new Random();
+        int connections = n;
+
+        //generating random pair of integers between 0 and n-1
+        for (int i = 0; i < n-1; i++) {
+            uf.connect(rd.nextInt(n), rd.nextInt(n));
+        }
+        //if sites are not connected then connecting them until only 1 component
+        while (uf.components()>1) {
+            int p = rd.nextInt(n);
+            int q = rd.nextInt(n);
+            if(!uf.isConnected(p,q)){
+                uf.connect(p,q);
+                connections++;
+            }
+        }
+
+        System.out.println("Total components::"+uf.components());
+        return connections;
+    }
+
+    /**
+     *
+     * @param args number of sites
+     */
+    public static void main(String[] args) {
+        for (String n : args) {
+            int connections = count(Integer.parseInt(n));
+            System.out.println("Total number of connections generated::" + connections + " among "+n +" sites");
+        }
     }
 }
